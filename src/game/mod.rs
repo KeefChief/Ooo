@@ -1,17 +1,24 @@
+use crate::game::utils::flag::Flag;
+use crate::game::world::World;
+use crate::game::world::npc::instantiate;
 use crate::platform::error::PlatformError;
 use crate::platform::{Platform, game::GameInterface};
 use crate::game::error::GameError;
 use crate::platform::renderer::TextureName;
 
 mod error;
+mod world;
+pub mod utils;
 
 pub struct Game {
-
+    world: World,
 }
 
 impl Game {
     pub fn new() -> Self {
-        Self {}
+        Self {
+            world: World::new(),
+        }
     }
 }
 
@@ -21,15 +28,17 @@ impl GameInterface for Game {
     fn init(&mut self, platform: &mut Platform) -> Result<(), Self::Error> {
         platform.renderer.load_texture(TextureName::Player, "assets/img/player.png")?; 
 
+        instantiate(&mut self.world, 0, 0, 1, Flag(0));
+        instantiate(&mut self.world, 0, 0, 21, Flag(0));
+
         Ok(())
     }
 
     fn update(&mut self, platform: &mut Platform, delta: f64) {
-        println!("HEya");
+        self.world.tick();
     }
 
     fn draw(&mut self, platform: &mut Platform) {
-        println!("Im drawin");
         platform.renderer.draw(TextureName::Player, 0, 0, 16, 16, 0, 0);
         platform.renderer.draw(TextureName::Player, 304, 224, 16, 16, 1, 0);
     }

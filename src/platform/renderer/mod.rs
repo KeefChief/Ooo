@@ -10,6 +10,7 @@ use crate::platform::{error::PlatformError};
 #[derive(Debug, Hash, PartialEq, Eq)]
 pub enum TextureName {
     Player,
+    Npcs,
 }
 
 //Define the renderer itself and its methods
@@ -48,13 +49,13 @@ impl Renderer {
     //src_x * w (same for y) so pick a tile using 'atlas' coords
     //__________________________
 
-    pub fn draw(&mut self, t: TextureName, x:i32, y:i32, w:u32, h:u32, src_x:i32, src_y:i32) 
+    pub fn draw(&mut self, t: TextureName, x:i32, y:i32, w:u32, h:u32, src_x:u32, src_y:u32) 
     -> Result<(), PlatformError>{
         let texture = self.textures.get(&t);
 
         let dst = Rect::new(x, y, w, h);
 
-        let src = Rect::new(src_x * w as i32, src_y * h as i32, w, h);
+        let src = Rect::new((src_x * w) as i32, (src_y * h) as i32, w, h);
 
         if let Some(texture) = texture {
             self.canvas.copy(texture, src, dst);

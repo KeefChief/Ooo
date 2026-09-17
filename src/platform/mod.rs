@@ -86,7 +86,7 @@ impl Platform {
             self.renderer.canvas.present();
             
             //Dont add stuff after that line
-            //fram time processing stuff
+            //frame time processing stuff
             //______________________________
             
             let elapsed = start.elapsed();
