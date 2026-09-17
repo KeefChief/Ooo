@@ -22,24 +22,36 @@ impl Game {
     }
 }
 
+//See platform/game for more info about this trait
+//_______________
+
 impl GameInterface for Game {
     type Error = GameError;
+
+    //Executed only once at launch
+    //_______________
 
     fn init(&mut self, platform: &mut Platform) -> Result<(), Self::Error> {
         platform.renderer.load_texture(TextureName::Player, "assets/img/player.png")?; 
 
-        instantiate(&mut self.world, 0, 0, 1, Flag(0));
-        instantiate(&mut self.world, 0, 0, 21, Flag(0));
+        instantiate(&mut self.world, 0, 0.0, 0.0, 16, 16, Flag(0));
 
         Ok(())
     }
 
+    //Update, 60 times per frame
+    //TODO: Maybe add delta time if i find out I need it(shouldn't need it though since the game is
+    //small)
+    //________________
+
     fn update(&mut self, platform: &mut Platform, delta: f64) {
-        self.world.tick();
+        self.world.tick(platform);
     }
 
+    //Draw, 60 per frame too, happens right after update
+    //________________
+
     fn draw(&mut self, platform: &mut Platform) {
-        platform.renderer.draw(TextureName::Player, 0, 0, 16, 16, 0, 0);
-        platform.renderer.draw(TextureName::Player, 304, 224, 16, 16, 1, 0);
+        self.world.draw(platform);
     }
 }

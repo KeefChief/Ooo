@@ -1,4 +1,4 @@
-use crate::game::{utils::flag::Flag, world::npc::{Npc, instantiate}};
+use crate::{game::{utils::flag::Flag, world::npc::{Npc, instantiate}}, platform::Platform};
 
 pub mod npc;
 
@@ -13,9 +13,15 @@ impl World {
         }
     }
 
-    pub fn tick(&mut self) {
+    pub fn tick(&mut self, platform: &mut Platform) {
         for npc in &mut self.npcs {
-            npc.tick();
+            npc.tick(platform);
+        }
+    }
+
+    pub fn draw(&self, platform: &mut Platform) {
+        for npc in &self.npcs {
+            npc.draw(platform);
         }
     }
 }

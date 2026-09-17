@@ -1,3 +1,4 @@
+#[derive(Debug)]
 pub struct Flag(pub u32);
 
 impl Flag {

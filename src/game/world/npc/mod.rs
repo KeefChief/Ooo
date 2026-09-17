@@ -1,12 +1,15 @@
 use crate::{game::{utils::flag::Flag, world::World}, platform::{Platform, renderer::TextureName}};
 
+mod player;
+
+#[derive(Debug)]
 pub struct Npc {
     kind: u32,
 
-    x: i32,
-    y: i32,
-    v_x: i32,
-    v_y: i32,
+    x: f32,
+    y: f32,
+    v_x: f32,
+    v_y: f32,
 
     src_x: u32,
     src_y: u32,
@@ -22,32 +25,48 @@ pub struct Npc {
     flags: Flag,
 }
 
-pub fn instantiate(world: &mut World, x: i32, y: i32, kind: u32, flags: Flag) {
-    world.npcs.push(Npc::new(x, y, kind, flags)); 
+pub fn instantiate(world: &mut World, kind: u32, x: f32, y: f32, w: u32, h: u32, flags: Flag) {
+    world.npcs.push(Npc::new(kind, x, y, w, h, flags)); 
 }
 
 impl Npc {
-    pub fn new(x: i32, y: i32, kind: u32, flags: Flag) -> Self {
+
+    //May need to add more parameters later/ a way to specify special paramters (like by giving a
+    //NPC with the special paramters you want and then this assigns them to it, and assigns the rest
+    //like normal)
+    pub fn new(kind: u32, x: f32, y: f32, w: u32, h: u32, flags: Flag) -> Self {
         Self { 
             kind, 
             x, 
             y, 
-            v_x: 0, 
-            v_y: 0, 
+            v_x: 0.0, 
+            v_y: 0.0, 
             src_x: 0,
             src_y: 0, 
-            w: 0, 
-            h: 0, 
+            w, 
+            h, 
             anim_count: 0, 
             action_count: 0,
-            is_player: false,
+            is_player: if kind == 0 { true } else { false },
             flags
         }
     }
 
-    pub fn tick(&mut self) {
-        println!("I am NPC of kind: {}", self.kind);
+    //Self explanatory
+    //_______________
+
+    pub fn tick(&mut self, platform: &mut Platform) {
+        self.x += self.v_x;
+        self.y += self.v_y;
+
+        match self.kind {
+            0 => self.t_player(platform),
+            _ => println!("Unknown entity kind: {}", self.kind)
+        }
     }
+
+    //Same over here I think
+    //_______________
 
     pub fn draw(&self, platform: &mut Platform) {
         let texture = if self.is_player == false {
@@ -56,6 +75,6 @@ impl Npc {
             TextureName::Player
         };
 
-        platform.renderer.draw(texture, self.x, self.y, self.w, self.h, self.src_x, self.src_y);
+        platform.renderer.draw(texture, self.x as i32, self.y as i32, self.w, self.h, self.src_x, self.src_y);
     }
 }

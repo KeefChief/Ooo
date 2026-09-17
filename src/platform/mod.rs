@@ -1,8 +1,8 @@
-use std::{thread, time::Duration};
+use std::{sync::mpsc::{self, Receiver}, thread, time::Duration};
 
-use sdl2::{self, EventPump, render::{Canvas, TextureCreator}, video::{Window, WindowContext}};
+use sdl2::{self, EventPump, pixels::Color, render::{Canvas, TextureCreator}, video::{Window, WindowContext}};
 
-use crate::platform::{error::PlatformError, game::GameInterface, renderer::Renderer};
+use crate::platform::{error::PlatformError, game::GameInterface, input::Input, renderer::Renderer};
 
 //mods
 //____
@@ -10,6 +10,7 @@ use crate::platform::{error::PlatformError, game::GameInterface, renderer::Rende
 pub mod renderer;
 pub mod game;
 pub mod error;
+pub mod input;
 
 //constants
 //_________
@@ -23,6 +24,7 @@ const FRAME_TIME:Duration = Duration::from_nanos(1000000000 / FPS);
 pub struct Platform {
     events: EventPump,
     pub renderer: Renderer,
+    pub input: Input,
 }
 
 impl Platform {
@@ -31,13 +33,15 @@ impl Platform {
         let video = sdl.video()?;
 
         let window = video
-            .window("Ooo", 320, 240)
-            .position_centered()
+            .window("Ooo", 640, 480)
+            .position(0, 0)
             .build()?;
 
         let mut canvas = window
             .into_canvas()
             .build()?;
+
+        canvas.set_logical_size(320, 240);
 
         let image_ctx = sdl2::image::init(sdl2::image::InitFlag::PNG)?;
 
@@ -47,10 +51,13 @@ impl Platform {
 
         let events = sdl.event_pump()?;
 
+        let input = Input::new();
+
         Ok(
             Self { 
                 events, 
                 renderer,
+                input,
             }
         )
     }
@@ -66,12 +73,20 @@ impl Platform {
         while running != 0 {
             let start = std::time::Instant::now();
 
+            self.input.reset_down();
+
             //Event loop
             //__________
 
             for event in self.events.poll_iter() {
                 match event {
                     sdl2::event::Event::Quit { .. } => running = 0,
+                    sdl2::event::Event::KeyDown { keycode: Some(keycode), repeat: false, .. } => {
+                        self.input.press_key(keycode);
+                    }
+                    sdl2::event::Event::KeyUp { keycode: Some(keycode), repeat: false, ..} => {
+                        self.input.release_key(keycode);
+                    }
                     _ => {}, 
                 }     
             }
@@ -80,6 +95,10 @@ impl Platform {
             //_________
 
             game.update(&mut self, 0.0);
+
+            self.renderer.canvas.set_draw_color(Color::RGB(37, 50, 63));
+
+            self.renderer.canvas.clear();
 
             game.draw(&mut self);
 
@@ -96,7 +115,7 @@ impl Platform {
             }
 
             let elapsed = start.elapsed();
-            println!("{:?}", elapsed);
+            // println!("{:?}", elapsed);
         }
         Ok(())
     }
