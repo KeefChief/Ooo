@@ -28,12 +28,12 @@ pub struct Platform {
 }
 
 impl Platform {
-    pub fn new() -> Result<Self, PlatformError> {
+    pub fn new(w: u32, h: u32) -> Result<Self, PlatformError> {
         let sdl = sdl2::init()?;
         let video = sdl.video()?;
 
         let window = video
-            .window("Ooo", 640, 480)
+            .window("Ooo", w * 2, h * 2)
             .position(0, 0)
             .build()?;
 
@@ -41,7 +41,8 @@ impl Platform {
             .into_canvas()
             .build()?;
 
-        canvas.set_logical_size(320, 240);
+        canvas.set_logical_size(w, h);
+        canvas.set_blend_mode(sdl2::render::BlendMode::Blend);
 
         let image_ctx = sdl2::image::init(sdl2::image::InitFlag::PNG)?;
 

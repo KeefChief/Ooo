@@ -15,9 +15,9 @@ pub struct Game {
 }
 
 impl Game {
-    pub fn new() -> Self {
+    pub fn new(path: String) -> Self {
         Self {
-            world: World::new(),
+            world: World::new(path),
         }
     }
 }
@@ -33,6 +33,9 @@ impl GameInterface for Game {
 
     fn init(&mut self, platform: &mut Platform) -> Result<(), Self::Error> {
         platform.renderer.load_texture(TextureName::Player, "assets/img/player.png")?; 
+        platform.renderer.load_texture(TextureName::BackGround, "assets/img/bak_test.png")?;
+        platform.renderer.load_texture(TextureName::MiddleGround, "assets/img/mid_test.png")?;
+        platform.renderer.load_texture(TextureName::ForeGround, "assets/img/fore_test.png")?;
 
         instantiate(&mut self.world, 0, 0.0, 0.0, 16, 16, Flag(0));
 

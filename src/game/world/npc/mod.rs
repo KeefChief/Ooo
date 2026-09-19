@@ -75,6 +75,6 @@ impl Npc {
             TextureName::Player
         };
 
-        platform.renderer.draw(texture, self.x as i32, self.y as i32, self.w, self.h, self.src_x, self.src_y);
+        platform.renderer.draw(&texture, self.x as i32, self.y as i32, self.w, self.h, self.src_x, self.src_y);
     }
 }

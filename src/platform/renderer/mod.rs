@@ -1,18 +1,27 @@
 use std::{collections::HashMap};
 
-use sdl2::{image::LoadTexture, rect::Rect, render::{Canvas, Texture, TextureCreator}, sys::SDL_Rect, video::{Window, WindowContext}};
+use sdl2::{image::LoadTexture, pixels::Color, rect::Rect, render::{Canvas, Texture, TextureCreator}, sys::SDL_Rect, video::{Window, WindowContext}};
 
 use crate::platform::{error::PlatformError};
+
+pub mod color;
 
 //Texture handles
 //_______________
 
-#[derive(Debug, Hash, PartialEq, Eq)]
+#[derive(Debug, Hash, PartialEq, Eq, Copy, Clone)]
 pub enum TextureName {
     Player,
     Npcs,
+
     Ui,
     Icons,
+
+    BackGround,
+    MiddleGround,
+    ForeGround,
+    
+    MenuBack,
 }
 
 //Define the renderer itself and its methods
@@ -51,7 +60,7 @@ impl Renderer {
     //src_x * w (same for y) so pick a tile using 'atlas' coords
     //__________________________
 
-    pub fn draw(&mut self, t: TextureName, x:i32, y:i32, w:u32, h:u32, src_x:u32, src_y:u32) 
+    pub fn draw(&mut self, t: &TextureName, x:i32, y:i32, w:u32, h:u32, src_x:u32, src_y:u32) 
     -> Result<(), PlatformError>{
         let texture = self.textures.get(&t);
 
@@ -63,5 +72,22 @@ impl Renderer {
             self.canvas.copy(texture, src, dst);
         }
         Ok(())
+    }
+
+    pub fn draw_rect(&mut self, x: i32, y: i32, w: u32, h: u32, r: u8, g: u8, b: u8, a: u8, fill: bool) {
+        let rect = Rect::new(x, y, w, h);
+            
+        self.canvas.set_draw_color(Color::RGBA(r, g, b, a));
+
+        if !fill {
+            self.canvas.draw_rect(rect);
+        } else {
+            self.canvas.fill_rect(rect);
+        }
+        self.canvas.set_draw_color(Color::RGB(255, 255, 255));
+    }
+
+    pub fn set_color(&mut self, c: color::Color) {
+        self.canvas.set_draw_color(Color::RGBA(c.r, c.g, c.b, c.a));
     }
 }

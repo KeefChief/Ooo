@@ -101,6 +101,7 @@ impl Input {
 
     pub fn reset_down(&mut self) {
         self.keys_down.fill(false);
+        self.keys_up.fill(false);
     }
 
     //Mouse stuff down here 
