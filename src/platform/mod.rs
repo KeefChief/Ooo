@@ -82,10 +82,19 @@ impl Platform {
                 match event {
                     sdl2::event::Event::Quit { .. } => running = 0,
                     sdl2::event::Event::KeyDown { keycode: Some(keycode), repeat: false, .. } => {
-                        self.input.press_key(keycode);
+                        self.input.press_key(input::Type::Key(keycode));
                     }
                     sdl2::event::Event::KeyUp { keycode: Some(keycode), repeat: false, ..} => {
-                        self.input.release_key(keycode);
+                        self.input.release_key(input::Type::Key(keycode));
+                    }
+                    sdl2::event::Event::MouseMotion { x, y, ..} => {
+                        self.input.update_mouse_pos(x, y);
+                    }
+                    sdl2::event::Event::MouseButtonDown { mouse_btn, .. } => {
+                        self.input.press_key(input::Type::Mouse(mouse_btn));
+                    }
+                    sdl2::event::Event::MouseButtonUp { mouse_btn, .. } => {
+                        self.input.release_key(input::Type::Mouse(mouse_btn));
                     }
                     _ => {}, 
                 }     

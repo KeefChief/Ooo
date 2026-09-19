@@ -4,6 +4,7 @@ use crate::{game::Game, platform::{Platform, error::PlatformError}};
 
 mod platform;
 mod game;
+mod editor;
 
 fn main() -> Result<(), PlatformError> {
     let mut p = Platform::new()?;

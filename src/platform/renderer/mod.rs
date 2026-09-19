@@ -11,6 +11,8 @@ use crate::platform::{error::PlatformError};
 pub enum TextureName {
     Player,
     Npcs,
+    Ui,
+    Icons,
 }
 
 //Define the renderer itself and its methods

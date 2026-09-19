@@ -24,5 +24,20 @@ impl Npc {
             self.v_y = 0.0;
             self.y = 100.0;
         }
+
+        if self.v_x.abs() >= 0.2 {
+            self.anim_count += 1;
+        } else {
+            self.anim_count = 0;
+        }
+
+        println!("{}", self.anim_count);
+
+        match self.anim_count {
+            (0..7) => self.src_x = 0,
+            (7..14) => self.src_x = 1,
+            (14) => self.src_x = 0,
+            _ => self.anim_count = 0
+        }
     }
 }

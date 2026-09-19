@@ -8,7 +8,7 @@ pub trait GameInterface {
 
     fn init(&mut self, platform: &mut Platform) -> Result<(), Self::Error>;
 
-    fn update(&mut self, platform: &mut Platform, delta: f64);
+    fn update(&mut self, platform: &mut Platform, delta: f64) -> Result<(), Self::Error>;
 
     fn draw(&mut self, platform: &mut Platform);
 }

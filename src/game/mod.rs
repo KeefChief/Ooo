@@ -44,8 +44,10 @@ impl GameInterface for Game {
     //small)
     //________________
 
-    fn update(&mut self, platform: &mut Platform, delta: f64) {
+    fn update(&mut self, platform: &mut Platform, delta: f64) -> Result<(), Self::Error> {
         self.world.tick(platform);
+
+        Ok(())
     }
 
     //Draw, 60 per frame too, happens right after update
