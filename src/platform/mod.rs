@@ -112,6 +112,8 @@ impl Platform {
 
             game.draw(&mut self);
 
+            self.renderer.present();
+
             self.renderer.canvas.present();
             
             //Dont add stuff after that line

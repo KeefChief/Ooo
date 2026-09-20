@@ -2,7 +2,7 @@ use std::{collections::HashMap};
 
 use sdl2::{image::LoadTexture, pixels::Color, rect::Rect, render::{Canvas, Texture, TextureCreator}, sys::SDL_Rect, video::{Window, WindowContext}};
 
-use crate::platform::{error::PlatformError};
+use crate::platform::{Platform, error::PlatformError};
 
 pub mod color;
 
@@ -24,6 +24,50 @@ pub enum TextureName {
     MenuBack,
 }
 
+pub struct DrawCommand {
+    d: Drawable,
+    depth: u32,
+}
+
+enum Drawable {
+    Img {
+        t: TextureName,
+        dst: Rect,
+        src: Rect,
+    },
+    Rect {
+        rect: Rect,
+        c: Color,
+        fill: bool,
+    }
+}
+
+impl DrawCommand {
+    pub fn new(depth: u32, d: Drawable) -> Self {
+        Self { depth, d }
+    }
+
+    pub fn draw(&self, canvas: &mut Canvas<Window>, textures: &HashMap<TextureName, Texture>) {
+        match self.d {
+            Drawable::Img { t, dst, src } => {
+                let t = textures.get(&t);
+                if let Some(t) = t {
+                    canvas.copy(t, src, dst);
+                }
+            }
+            Drawable::Rect { rect, c, fill } => {
+                canvas.set_draw_color(c);
+                if fill {
+                    canvas.fill_rect(rect);
+                } else {
+                    canvas.draw_rect(rect);
+                }
+                canvas.set_draw_color(Color::RGBA(255, 255, 255, 255));
+            }
+        }
+    }
+}
+
 //Define the renderer itself and its methods
 //TODO: Probably add something about the unsafe_texture to not let them roam in RAM eternally
 //__________________________
@@ -31,6 +75,7 @@ pub enum TextureName {
 pub struct Renderer {
     textures: HashMap<TextureName, Texture>,
     texture_creator: TextureCreator<WindowContext>,
+    commands: Vec<DrawCommand>,
     pub canvas: Canvas<Window>
 }
 
@@ -40,6 +85,7 @@ impl Renderer {
             textures: HashMap::new(),
             texture_creator,
             canvas,
+            commands: Vec::new(),
         }
     }
 
@@ -60,34 +106,41 @@ impl Renderer {
     //src_x * w (same for y) so pick a tile using 'atlas' coords
     //__________________________
 
-    pub fn draw(&mut self, t: &TextureName, x:i32, y:i32, w:u32, h:u32, src_x:u32, src_y:u32) 
+    pub fn draw(&mut self, t: &TextureName, mut x:i32, mut y:i32, w:u32, h:u32, src_x:u32, src_y:u32, depth: u32, centered: bool) 
     -> Result<(), PlatformError>{
-        let texture = self.textures.get(&t);
+
+        if centered {
+            x -= (w / 2) as i32;
+            y -= (h / 2) as i32;
+        }
 
         let dst = Rect::new(x, y, w, h);
 
         let src = Rect::new((src_x * w) as i32, (src_y * h) as i32, w, h);
 
-        if let Some(texture) = texture {
-            self.canvas.copy(texture, src, dst);
-        }
+        let d = Drawable::Img { t: *t, dst, src };
+        let command = DrawCommand::new(depth, d);
+        self.commands.push(command);
+
         Ok(())
     }
 
-    pub fn draw_rect(&mut self, x: i32, y: i32, w: u32, h: u32, r: u8, g: u8, b: u8, a: u8, fill: bool) {
+    pub fn draw_rect(&mut self, x: i32, y: i32, w: u32, h: u32, r: u8, g: u8, b: u8, a: u8, depth: u32, fill: bool) 
+    {
         let rect = Rect::new(x, y, w, h);
-            
-        self.canvas.set_draw_color(Color::RGBA(r, g, b, a));
-
-        if !fill {
-            self.canvas.draw_rect(rect);
-        } else {
-            self.canvas.fill_rect(rect);
-        }
-        self.canvas.set_draw_color(Color::RGB(255, 255, 255));
+        let d = Drawable::Rect { rect, c: Color::RGBA(r, g, b, a), fill };
+        self.commands.push(DrawCommand::new(depth, d));
     }
 
     pub fn set_color(&mut self, c: color::Color) {
         self.canvas.set_draw_color(Color::RGBA(c.r, c.g, c.b, c.a));
+    }
+
+    pub fn present(&mut self) {
+        self.commands.sort_by_key(|cmd| cmd.depth);
+        for command in &self.commands {
+            command.draw(&mut self.canvas, &self.textures);
+        }
+        self.commands.clear();
     }
 }

@@ -26,15 +26,20 @@ pub struct Editor {
     //This is just to draw the highlights, drawing pannels provide their own data for local tile
     t_x: i32,
     t_y: i32,
+
+    x_off: i32,
+    y_off: i32,
+
+    hide_layers: bool,
 }
 
 impl Editor {
     pub fn new() -> Self {
         Self {
             ui: Ui::new(),
-            map: Map::new(18, 16),
+            map: Map::new(19, 16),
 
-            current_layer: 0,
+            current_layer: 1,
             current_tile: 0,
     
             a_t_x: 0,
@@ -46,6 +51,11 @@ impl Editor {
 
             t_x: 0,
             t_y: 0,
+
+            x_off: 0,
+            y_off: 0,
+
+            hide_layers: false,
         }
     }
 }
@@ -108,13 +118,29 @@ impl GameInterface for Editor {
         self.t_x = m_x / 16;
         self.t_y = m_y / 16;
 
-        if platform.input.get_key_down(Key::Up) && self.current_layer != 2 {
+        if platform.input.get_key_down(Key::SwitchR) && self.current_layer != 2 {
             self.current_layer += 1;
             println!("Switching to layer: {}", self.current_layer);
         }
-        if platform.input.get_key_down(Key::Down) && self.current_layer != 0 {
+        if platform.input.get_key_down(Key::SwitchL) && self.current_layer != 0 {
             self.current_layer -= 1;
             println!("Switching to layer: {}", self.current_layer);
+        }
+        if platform.input.get_key_down(Key::Left) {
+            self.x_off -= 16;
+        }
+        if platform.input.get_key_down(Key::Right) {
+            self.x_off += 16;
+        }
+        if platform.input.get_key_down(Key::Up) {
+            self.y_off -= 16;
+        }
+        if platform.input.get_key_down(Key::Down) {
+            self.y_off += 16;
+        }
+
+        if platform.input.get_key_down(Key::Jump) {
+            self.hide_layers = !self.hide_layers;
         }
 
         for event in events {
@@ -203,8 +229,8 @@ impl GameInterface for Editor {
                             self.b_t_y = y as u8 / 16;
                         }
                         val if val == ElementId::Canvas as u32 => {
-                            let t_x = x / 16;
-                            let t_y = y / 16;
+                            let t_x = (x - self.x_off) / 16;
+                            let t_y = (y - self.y_off) / 16;
 
                             let (a_x, b_x, a_y, b_y) = match self.current_tool {
                                 Tool::Pen => (self.a_t_x, self.b_t_x, self.a_t_y, self.b_t_y),
@@ -228,16 +254,16 @@ impl GameInterface for Editor {
     fn draw(&mut self, platform: &mut crate::platform::Platform) {
         for x in (0..10) {
             for y in (0..8) {
-                platform.renderer.draw(&TextureName::MenuBack, x * 32, y * 32, 32, 32, 1, 0);
+                platform.renderer.draw(&TextureName::MenuBack, x * 32, y * 32, 32, 32, 0, 1, 0, false);
             }
         }
 
-        self.map.draw(platform, 16, 0);
+        self.map.draw(platform, self.x_off + 16, self.y_off, self.current_layer, true, self.hide_layers);
 
-        platform.renderer.draw(&TEXTURES[self.current_layer], 336, 0, 256, 256, 0, 0);
+        platform.renderer.draw(&TEXTURES[self.current_layer], 336, 0, 256, 256, 0, 0, 1, false);
 
-        platform.renderer.draw_rect(self.t_x * 16, self.t_y * 16, 16, 16, 205, 207, 229, 50, false);
-        platform.renderer.draw_rect(self.t_x * 16, self.t_y * 16, 16, 16, 205, 207, 229, 70, true);
+        platform.renderer.draw_rect(self.t_x * 16, self.t_y * 16, 16, 16, 205, 207, 229, 50, 3, false);
+        platform.renderer.draw_rect(self.t_x * 16, self.t_y * 16, 16, 16, 205, 207, 229, 70, 3, true);
 
         platform.renderer.set_color(Color::new(255, 255, 255, 255));
 

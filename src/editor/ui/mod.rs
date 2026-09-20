@@ -146,11 +146,13 @@ impl UiElement {
                     self.x + x as i32 * 16,
                     self.y + y as i32 * 16,
                     16, 16,
-                    src_x, src_y);
+                    src_x, src_y,
+                    1,
+                    false);
             }
             src_y = base_src_y;
         }
 
-        platform.renderer.draw(&TextureName::Icons, self.x, self.y, 16, 16, self.i_src_x, self.i_src_y);
+        platform.renderer.draw(&TextureName::Icons, self.x, self.y, 16, 16, self.i_src_x, self.i_src_y, 1, false);
     }
 }

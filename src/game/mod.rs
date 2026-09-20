@@ -8,6 +8,7 @@ use crate::platform::renderer::TextureName;
 
 mod error;
 mod world;
+mod systems;
 pub mod utils;
 
 pub struct Game {
@@ -37,7 +38,7 @@ impl GameInterface for Game {
         platform.renderer.load_texture(TextureName::MiddleGround, "assets/img/mid_test.png")?;
         platform.renderer.load_texture(TextureName::ForeGround, "assets/img/fore_test.png")?;
 
-        instantiate(&mut self.world, 0, 0.0, 0.0, 16, 16, Flag(0));
+        instantiate(&mut self.world, 0, 0.0, 90.0, 16, 16, Flag(0));
 
         Ok(())
     }

@@ -17,7 +17,7 @@ impl World {
 
     pub fn tick(&mut self, platform: &mut Platform) {
         for npc in &mut self.npcs {
-            npc.tick(platform);
+            npc.tick(platform, &self.map);
         }
     }
 
@@ -25,6 +25,6 @@ impl World {
         for npc in &self.npcs {
             npc.draw(platform);
         }
-        self.map.draw(platform, 0, 0);
+        self.map.draw(platform, 0, 0, 0, false, false);
     }
 }

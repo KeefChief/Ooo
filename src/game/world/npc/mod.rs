@@ -1,4 +1,4 @@
-use crate::{game::{utils::flag::Flag, world::World}, platform::{Platform, renderer::TextureName}};
+use crate::{editor::map::Map, game::{systems::physics::collisions::{Collider, Collision}, utils::flag::Flag, world::World}, platform::{Platform, renderer::TextureName}};
 
 mod player;
 
@@ -23,6 +23,8 @@ pub struct Npc {
     is_player: bool,
 
     flags: Flag,
+
+    col : Collider,
 }
 
 pub fn instantiate(world: &mut World, kind: u32, x: f32, y: f32, w: u32, h: u32, flags: Flag) {
@@ -48,16 +50,20 @@ impl Npc {
             anim_count: 0, 
             action_count: 0,
             is_player: if kind == 0 { true } else { false },
-            flags
+            flags,
+            col: Collider::new(2, 2, 2, 8)
         }
     }
 
     //Self explanatory
     //_______________
 
-    pub fn tick(&mut self, platform: &mut Platform) {
+    pub fn tick(&mut self, platform: &mut Platform, map: &Map) {
+
         self.x += self.v_x;
         self.y += self.v_y;
+
+        self.hit_map(map);
 
         match self.kind {
             0 => self.t_player(platform),
@@ -75,6 +81,37 @@ impl Npc {
             TextureName::Player
         };
 
-        platform.renderer.draw(&texture, self.x as i32, self.y as i32, self.w, self.h, self.src_x, self.src_y);
+        platform.renderer.draw(&texture, self.x as i32, self.y as i32, self.w, self.h, self.src_x, self.src_y, 1, true);
+        self.col.draw(platform, self.x as i32, self.y as i32);
+    }
+}
+
+impl Collision for Npc {
+    fn get_col(&self) -> &Collider {
+        &self.col
+    }
+
+    fn get_pos(&self) -> (f32, f32) {
+        (self.x, self.y)
+    }
+
+    fn get_vel(&self) -> (f32, f32) {
+        (self.v_x, self.v_y)
+    }
+
+    fn set_x(&mut self, x: f32) {
+        self.x = x
+    }
+
+    fn set_y(&mut self, y: f32) {
+        self.y = y
+    }
+
+    fn set_vel_y(&mut self, y: f32) {
+        self.v_y = y
+    }
+
+    fn set_vel_x(&mut self, x: f32) {
+        self.v_x = x
     }
 }

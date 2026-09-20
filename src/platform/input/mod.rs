@@ -7,6 +7,8 @@ pub enum Key {
     Right,
     Up,
     Down,
+    SwitchL,
+    SwitchR,
     Jump,
     MouseLeft,
     Count,
@@ -35,6 +37,8 @@ impl Input {
             (Type::Key(Keycode::D), Key::Right),
             (Type::Key(Keycode::Z), Key::Up),
             (Type::Key(Keycode::S), Key::Down),
+            (Type::Key(Keycode::A), Key::SwitchL),
+            (Type::Key(Keycode::E), Key::SwitchR),
             (Type::Key(Keycode::Space), Key::Jump),
             (Type::Mouse(MouseButton::Left), Key::MouseLeft),
         ]);

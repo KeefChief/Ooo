@@ -1,6 +1,6 @@
 use std::{fs::File, io::Write, cmp::{min, max}};
 
-use crate::{editor::error::EditorError, platform::{self, Platform, renderer::TextureName}};
+use crate::{editor::error::EditorError, platform::{self, Platform, renderer::{TextureName, color::Color}}};
 
 pub const HEADER: &[u8] = b"MAP"; 
 
@@ -11,7 +11,7 @@ pub const TEXTURES: [TextureName; 3] = [
 ];
 
 pub struct Map {
-    layers: [Layer; 3],
+    pub layers: [Layer; 3],
     w: u32,
     h: u32,
 }
@@ -19,7 +19,7 @@ pub struct Map {
 impl Map {
     pub fn new(w: u32, h: u32) -> Self {
         Self {
-            layers: [Layer::new(w, h), Layer::new(w, h), Layer::new(w, h)],
+            layers: [Layer::new(w, h, 0.5), Layer::new(w, h, 1.0), Layer::new(w, h, 1.5)],
             w,
             h,
         }
@@ -51,9 +51,29 @@ impl Map {
         }
     }
 
-    pub fn draw(&self, platform: &mut Platform, x: i32, y: i32) {
-        for (i, layer) in self.layers.iter().enumerate() {
-            layer.draw(platform, TEXTURES[i], x, y);
+    pub fn get_col(&self, x: i32, y: i32) -> Option<&u8> {
+        self.layers[1].get_col(x, y)
+    }
+
+    pub fn draw(&self, platform: &mut Platform, x: i32, y: i32, c_layer: usize, is_editor: bool, hide_layers: bool) {
+        if is_editor {
+            let c = match c_layer {
+                0 => Color::new(255, 50, 50, 50),
+                1 => Color::new(50, 255, 50, 50),
+                2 => Color::new(50, 50, 255, 50),
+                _ => Color::new(0, 0, 0, 50)
+            };
+            self.layers[c_layer].draw_outline(platform, x, y, c, c_layer as u32);
+        }
+        if hide_layers {
+            self.layers[c_layer].draw(platform, TEXTURES[c_layer], x, y, is_editor, 1);
+        } else {
+            for (i, layer) in self.layers.iter().enumerate() {
+                layer.draw(platform, TEXTURES[i], x, y, is_editor, i as u32);
+            }
+        }
+        if is_editor {
+            platform.renderer.draw(&TextureName::Icons, 16, 0, 16, 16, c_layer as u32, 2, 2, false);
         }
     }
 
@@ -119,14 +139,16 @@ pub struct Layer {
     tiles: Vec<u8>,
     w: u32,
     h: u32,
+    scroll: f32,
 }
 
 impl Layer {
-    pub fn new(w: u32, h: u32) -> Self {
+    pub fn new(w: u32, h: u32, scroll: f32) -> Self {
         Self {
             tiles: vec![0; (w * h) as usize],
             w,
             h,
+            scroll,
         }
     }
 
@@ -139,7 +161,29 @@ impl Layer {
         }
     }
 
-    pub fn draw(&self, platform: &mut Platform, t: TextureName, x: i32, y: i32) {
+    pub fn get_col(&self, x: i32, y: i32) -> Option<&u8> {
+        self.tiles.get((x * self.h as i32 + y) as usize)
+    }
+
+    pub fn draw_outline(&self, platform: &mut Platform, x: i32, y: i32, c: Color, d: u32) {
+        platform.renderer.draw_rect(
+            x as i32,
+            y as i32, 
+            self.w * 16, self.h * 16, 
+            c.r, c.g, c.b, 125, 
+            d,
+            false);
+        platform.renderer.draw_rect(
+            x as i32,
+            y as i32, 
+            self.w * 16,
+            self.h * 16, 
+            c.r, c.g, c.b, c.a,
+            d,
+            true);
+    }
+
+    pub fn draw(&self, platform: &mut Platform, t: TextureName, x: i32, y: i32, is_editor: bool, depth: u32) {
         for i_x in (0..self.w) {
             for i_y in (0..self.h) {
                 let id = self.tiles[(i_x * self.h + i_y) as usize];
@@ -147,11 +191,16 @@ impl Layer {
                 let src_x = id as u32 % 16;
                 let src_y = id as u32 / 16;
 
+                let x = if is_editor { x } else { (x as f32 * self.scroll) as i32 };
+                let y = if is_editor { y } else { (y as f32 * self.scroll) as i32 };
+
                 platform.renderer.draw(&t, 
-                    x as i32 + (i_x * 16) as i32, 
-                    y as i32 + (i_y * 16) as i32, 
+                    x + (i_x * 16) as i32, 
+                    y + (i_y * 16) as i32, 
                     16, 16, 
-                    src_x, src_y);
+                    src_x, src_y,
+                    depth,
+                    false);
             }
         } 
     }
