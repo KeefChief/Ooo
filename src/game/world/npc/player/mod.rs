@@ -26,8 +26,8 @@ impl Npc {
             self.anim_count = 0;
         }
 
-        if self.v_y >= 2.7 {
-            self.v_y = 2.7;
+        if self.v_y >= 3.0 {
+            self.v_y = 3.0;
         }
 
         match self.anim_count {

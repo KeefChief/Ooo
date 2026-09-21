@@ -83,7 +83,7 @@ impl Npc {
         };
 
         platform.renderer.draw(&texture, self.x as i32 - x, self.y as i32 - y, self.w, self.h, self.src_x, self.src_y, 1, true);
-        self.col.draw(platform, self.x as i32, self.y as i32);
+        self.col.draw(platform, self.x as i32 - x, self.y as i32 - y);
     }
 }
 
