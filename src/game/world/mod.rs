@@ -3,7 +3,7 @@ use crate::{editor::map::Map, game::{utils::flag::Flag, world::npc::{Npc, instan
 pub mod npc;
 
 pub struct World {
-    npcs: Vec<Npc>,
+    pub npcs: Vec<Npc>,
     map: Map,
 }
 
@@ -21,10 +21,10 @@ impl World {
         }
     }
 
-    pub fn draw(&self, platform: &mut Platform) {
+    pub fn draw(&self, platform: &mut Platform, x: i32, y: i32) {
         for npc in &self.npcs {
-            npc.draw(platform);
+            npc.draw(platform, x - 160, y);
         }
-        self.map.draw(platform, 0, 0, 0, false, false);
+        self.map.draw(platform, -x + 160, -y, 0, false, false);
     }
 }

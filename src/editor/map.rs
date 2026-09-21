@@ -66,7 +66,7 @@ impl Map {
             self.layers[c_layer].draw_outline(platform, x, y, c, c_layer as u32);
         }
         if hide_layers {
-            self.layers[c_layer].draw(platform, TEXTURES[c_layer], x, y, is_editor, 1);
+            self.layers[c_layer].draw(platform, TEXTURES[c_layer], x, y, is_editor, 3);
         } else {
             for (i, layer) in self.layers.iter().enumerate() {
                 layer.draw(platform, TEXTURES[i], x, y, is_editor, i as u32);

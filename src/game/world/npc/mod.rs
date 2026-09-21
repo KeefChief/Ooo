@@ -6,8 +6,8 @@ mod player;
 pub struct Npc {
     kind: u32,
 
-    x: f32,
-    y: f32,
+    pub x: f32,
+    pub y: f32,
     v_x: f32,
     v_y: f32,
 
@@ -27,8 +27,10 @@ pub struct Npc {
     col : Collider,
 }
 
-pub fn instantiate(world: &mut World, kind: u32, x: f32, y: f32, w: u32, h: u32, flags: Flag) {
+pub fn instantiate(world: &mut World, kind: u32, x: f32, y: f32, w: u32, h: u32, flags: Flag) -> usize {
+    let id = world.npcs.len();
     world.npcs.push(Npc::new(kind, x, y, w, h, flags)); 
+    id
 }
 
 impl Npc {
@@ -59,29 +61,28 @@ impl Npc {
     //_______________
 
     pub fn tick(&mut self, platform: &mut Platform, map: &Map) {
-
-        self.x += self.v_x;
-        self.y += self.v_y;
-
-        self.hit_map(map);
-
         match self.kind {
             0 => self.t_player(platform),
             _ => println!("Unknown entity kind: {}", self.kind)
         }
+        
+        self.hit_map(map);
+
+        self.x += self.v_x;
+        self.y += self.v_y;
     }
 
     //Same over here I think
     //_______________
 
-    pub fn draw(&self, platform: &mut Platform) {
+    pub fn draw(&self, platform: &mut Platform, x: i32, y: i32) {
         let texture = if self.is_player == false {
             TextureName::Npcs
         } else {
             TextureName::Player
         };
 
-        platform.renderer.draw(&texture, self.x as i32, self.y as i32, self.w, self.h, self.src_x, self.src_y, 1, true);
+        platform.renderer.draw(&texture, self.x as i32 - x, self.y as i32 - y, self.w, self.h, self.src_x, self.src_y, 1, true);
         self.col.draw(platform, self.x as i32, self.y as i32);
     }
 }

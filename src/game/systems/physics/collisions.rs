@@ -40,12 +40,13 @@ pub trait Collision {
     fn hit_map(&mut self, map: &Map) {
         let col = *self.get_col();
         let (x, y) = self.get_pos();
+        let (v_x, v_y) = self.get_vel();
 
-        let left = (x as i32 - col.l as i32) / 16;
-        let right = (x as i32 + col.r as i32) / 16;
+        let left = ((x - col.l as f32 + v_x) / 16.0) as i32;
+        let right = ((x + col.r as f32 + v_x) / 16.0) as i32;
 
-        let top = (y as i32 - col.u as i32) / 16;
-        let bottom = (y as i32 + col.d as i32) / 16;
+        let top = ((y - col.u as f32 + v_y) / 16.0) as i32;
+        let bottom = ((y + col.d as f32 + v_y) / 16.0) as i32;
 
         for x in (left..=right) {
             for y in (top..=bottom) {
@@ -63,8 +64,8 @@ pub trait Collision {
         let (x, y) = self.get_pos();
         let (v_x, v_y) = self.get_vel();
 
-        let left = x - col.l as f32;
-        let right = x + col.r as f32;
+        let left = x - col.l as f32 + v_x;
+        let right = x + col.r as f32 + v_x;
 
         let top = y - col.u as f32;
         let bottom = y + col.d as f32;
@@ -78,18 +79,18 @@ pub trait Collision {
         // println!("{top} > {block_bottom}");
         // println!("{block_top} > {bottom}");
 
-        if right > block_left && left < block_right {
+        if bottom > block_top && top < block_bottom {
             // println!("In range");
-            if bottom > block_top && bottom < block_bottom && v_y > 0.0 {
-                // println!("Collidin bottom");
-                self.set_y(block_top - col.d as f32);
-                self.set_vel_y(0.0);
-            } 
-            if top < block_bottom && top > block_top && v_y < 0.0 {
-                // println!("Collidin top");
-                self.set_y(block_bottom + col.u as f32);
-                self.set_vel_y(0.0);
+            if left < block_right && left > block_left && v_x < 0.0 {
+                // println!("Collidin left");
+                self.set_x(block_right + col.l as f32);
+                self.set_vel_x(0.0);
             }
+            if right > block_left && right < block_right && v_x > 0.0 {
+                // println!("Collidin right");
+                self.set_x(block_left - col.r as f32);
+                self.set_vel_x(0.0);
+            } 
         }
 
         let (x, y) = self.get_pos();
@@ -98,23 +99,23 @@ pub trait Collision {
         let left = x - col.l as f32;
         let right = x + col.r as f32;
 
-        let top = y - col.u as f32;
-        let bottom = y + col.d as f32;
+        let top = y - col.u as f32 + v_y;
+        let bottom = y + col.d as f32 + v_y;
 
+        if right > block_left && left < block_right {
+            println!("In range");
+            if top < block_bottom && top > block_top && v_y < 0.0 {
+                // println!("Collidin top");
+                self.set_y(block_bottom + col.u as f32);
+                self.set_vel_y(0.0);
+            }
+            if bottom > block_top && bottom < block_bottom && v_y > 0.0 {
+                // println!("Collidin bottom");
+                self.set_y(block_top - col.d as f32);
+                self.set_vel_y(0.0);
+            } 
+        }
         // println!("Player top: {top}, bottom: {bottom}");
         // println!("Block at: x: {t_x}; y: {t_y}, : {block_top}; {block_bottom}");
-
-        if bottom > block_top && top < block_bottom {
-            println!("In range");
-            if right > block_left && right < block_right && v_x > 0.0 {
-                println!("Collidin right");
-                self.set_x(block_left - col.r as f32);
-                self.set_vel_x(0.0);
-            } if left < block_right && left > block_left && v_x < 0.0 {
-                println!("Collidin left");
-                self.set_x(block_right + col.l as f32);
-                self.set_vel_x(0.0);
-            }
-        }
     }
 }

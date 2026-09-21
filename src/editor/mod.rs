@@ -71,7 +71,11 @@ enum ElementId {
     Canvas,
     Palette,
 
-    None
+    Eye,
+    LUp,
+    LDown,
+
+    None,
 }
 
 enum Tool {
@@ -103,6 +107,10 @@ impl GameInterface for Editor {
         self.ui.elems.push(UiElement::new(0, 128, 0, 0, 6, 0, ElementId::None as u32, true, true));
 
         self.ui.elems.push(UiElement::new(320, 0, 0, 15, 0, 0, ElementId::None as u32, true, false));
+
+        self.ui.elems.push(UiElement::new(320, 0, 0, 0, 4, 1, ElementId::Eye as u32, true, true));
+        self.ui.elems.push(UiElement::new(320, 224, 0, 0, 2, 1, ElementId::LUp as u32, true, true));
+        self.ui.elems.push(UiElement::new(320, 240, 0, 0, 3, 1, ElementId::LDown as u32, true, true));
 
         self.ui.elems.push(UiElement::new(16, 0, 18, 15, 0, 0, ElementId::Canvas as u32, false, true));
         self.ui.elems.push(UiElement::new(336, 0, 15, 15, 0, 0, ElementId::Palette as u32, false, true));
@@ -209,6 +217,17 @@ impl GameInterface for Editor {
                             self.current_tile = (t_y * 16 + t_x) as u8;
 
                             self.current_tool = Tool::Pen;
+                        }
+
+                        //Right bar
+                        val if val == ElementId::Eye as u32 => {
+                            self.hide_layers = !self.hide_layers;
+                        }
+                        val if val == ElementId::LUp as u32 => {
+                            if self.current_layer != 2 { self.current_layer += 1 }
+                        }
+                        val if val == ElementId::LDown as u32 => {
+                            if self.current_layer != 0 { self.current_layer -= 1 }
                         }
                         _ => println!("Unknown element id"),
                     }
